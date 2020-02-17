@@ -1,5 +1,5 @@
-# Free Text Tagger
-This repository contains all scripts to extract contextual information from a free text.
+# TexTa
+TexTa is a tagger that extracts contextual information from free text.
 
 Given a free text, the script is able to extract information about 4 categories: activities, emotions, interactions and places. For each of these categories there is a dictionary, which contains a list of sub-categories. 
 
