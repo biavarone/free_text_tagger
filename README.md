@@ -8,9 +8,19 @@ Text given in input is parsed and then matched to the sub-categories by handwrit
 ## Requirements
 - Requires Python 3.x
 - Requires the following Python libraries:
-	- [spacy](https://spacy.io/) 
+	- [spaCy](https://spacy.io/) v2.2.3
+	- [spaCy language model](https://spacy.io/usage/models) 'en_core_web_sm' v2.2.5
 	- re
+	
+## Installing spaCy and needed models
+- Install spaCy via pip or your preferred method (see [here](https://spacy.io/usage) for more details)
 
+	`pip install -U spacy`
+
+- Download language model
+
+	`python spacy -m download en_core_web_sm`
+	
 ## Input
 - Text (string)
 
