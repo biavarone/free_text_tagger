@@ -21,12 +21,10 @@ Text given in input is parsed and then matched to the sub-categories by handwrit
 
 	`python spacy -m download en_core_web_sm`
 	
-## Usage 
+## Input 
+- text
 
-`python3 tagger.py text > outfile.txt`
-
-Text is the input text (string utf-8 format) to be analyzed.
-
+[choose how to pass the text to the file and how to get the output]
 
 ## Output
 For each category returns a `matches` list containing:
