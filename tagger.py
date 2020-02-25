@@ -1,80 +1,111 @@
 # -*- coding: utf-8  -*-
-# !/usr/bin/python
 
 __author__ = "biavarone"
 
-
-import spacy
-
-from free_text_tagger_v2 import analyzer
-from free_text_tagger_v2 import activities_matcher
-from free_text_tagger_v2 import emotions_matcher
-from free_text_tagger_v2 import interactions_matcher
-from free_text_tagger_v2 import places_matcher
-
-
-nlp = spacy.load('en_core_web_lg')
-
-
-def match_emotions(sentence):
-    matches = emotions_matcher.match(sentence)
-
-    for match_id, start, end in matches:
-        if analyzer.check_negation(sentence[start]):
-            pass
-        else:
-            # match_id is a number associated to the matched category, i.e. 9391526999249888540 == 'sad'
-            rule_id = nlp.vocab.strings[match_id]  # get the unicode ID, i.e. 'sad'
-            span = sentence[start: end]  # get the matched slice of the sentence
-            return rule_id, span  # decide if you want to return match_id or rule_id
-
-
-def match_activities(sentence):
-    matches = activities_matcher.match(sentence)
-
-    for match_id, start, end in matches:
-        # match_id is a number associated to the matched category, i.e. 5133706519360878345 == 'leisure'
-        if analyzer.check_negation(sentence[start]):
-            pass
-        else:
-            rule_id = nlp.vocab.strings[match_id]  # get the unicode ID, i.e. 'leisure'
-            span = sentence[start: end]  # get the matched slice of the sentence
-            return rule_id, span  # decide if you want to return match_id or rule_id
+from utils import *
+from activities import activities_matcher
+from emotions import emotions_matcher
+from interactions import interactions_matcher
+from places import places_matcher
 
 
 def match_places(sentence):
-    matches = places_matcher.match(sentence)
+    found = places_matcher(sentence)
+    all_matches = []
 
-    for match_id, start, end in matches:
-        # match_id is a number associated to the matched category, i.e. 12006852138382633966 == 'home'
-        rule_id = nlp.vocab.strings[match_id]  # get the unicode ID, i.e. 'home'
-        span = sentence[start: end]  # get the matched slice of the sentence
-        return rule_id, span  # decide if you want to return match_id or rule_id
+    for match_id, start, end in found:
+        if check_negation(sentence[start]):
+            pass
+        else:
+            all_matches.append((match_id, start, end))
+
+    return all_matches
 
 
 def match_interactions(sentence):
+    found = interactions_matcher(sentence)
+    all_matches = []  # TODO longest match
 
-    matches = interactions_matcher.match(sentence)
+    for match_id, start, end in found:
+        if check_negation(sentence[start]):
+            pass
+        else:
+            all_matches.append((match_id, start, end))
 
-    for match_id, start, end in matches:
-        # match_id is a number associated to the matched category, i.e. 18292453351080475948 == 'family'
-        rule_id = nlp.vocab.strings[match_id]  # get the unicode ID, i.e. 'family'
-        span = sentence[start: end]  # get the matched slice of the sentence
-        return rule_id, span  # decide if you want to return match_id or rule_id
+    return all_matches
+
+
+def match_emotions(sentence):
+    found = emotions_matcher(sentence)
+    all_matches = []
+
+    for match_id, start, end in found:
+        if check_negation(sentence[start]):
+            pass
+        else:
+            all_matches.append((match_id, start, end))
+
+    return all_matches
+
+
+def match_activities(sentence):
+    found = activities_matcher(sentence)  # all matches, to be checked for negation
+    all_matches = []  # all matches # TODO find longest match if needed
+
+    for match_id, start, end in found:
+        if check_negation(sentence[start]):
+            pass
+        else:
+            all_matches.append((match_id, start, end))
+
+    return all_matches
 
 
 if __name__ == "__main__":
 
-    sentence = "Here goes the sentence to be analyzed"
+    parser = argparse.ArgumentParser(description='TexTa')
+    parser.add_argument('text', help='The input text in string format', type=str)
+    args = parser.parse_args()
+    
+    sentence = args.text
 
     # analyze sentence
-    sentence = analyzer.substitute_dash(sentence)  # substitute dash with full stop for better parsing
+    sentence = substitute_dash(sentence)  # substitute dash with full stop for better parsing
     sentence = nlp(sentence)
 
-    # return tags
     for sent in sentence.sents:
         sent = sent.as_doc()
-        int_id, int_span = match_interactions(sent)
-        pl_id, pl_span = match_places(sent)
-        emo_id, emo_span = match_emotions(sent)
-        act_id, act_span = match_activities(sent)
+
+        activities_tags = match_activities(sent)
+        if activities_tags:
+            # match_id is a number associated to the matched category, i.e. 5133706519360878345 == 'leisure'
+            for match_id, start, end in activities_tags:
+                rule_id = nlp.vocab.strings[match_id]  # get the unicode ID, i.e. 'leisure'
+                span = sent[start: end]  # get the matched slice of the sentence
+                print("activities: %s: %s" % (rule_id, span))
+
+        emotions_tags = match_emotions(sent)
+        if emotions_tags:
+            # match_id is a number associated to the matched category, i.e. 9391526999249888540 == 'sad'
+            for match_id, start, end in emotions_tags:
+                rule_id = nlp.vocab.strings[match_id]  # get the unicode ID, i.e. 'sad'
+                span = sent[start: end]  # get the matched slice of the sentence
+                print(f"emotions: {rule_id}: {span}")
+        
+        interactions_tags = match_interactions(sent)
+        if interactions_tags:
+            for match_id, start, end in interactions_tags:
+                # match_id is a number associated to the matched category, i.e. 18292453351080475948 == 'family'
+                rule_id = nlp.vocab.strings[match_id]  # get the unicode ID, i.e. 'family'
+                span = sent[start: end]  # get the matched slice of the sentence
+                print("interactions: %s: %s" % (rule_id, span))
+        
+        places_tags = match_places(sent)
+        if places_tags:
+            for match_id, start, end in places_tags:
+                # match_id is a number associated to the matched category, i.e. 12006852138382633966 == 'home'
+                rule_id = nlp.vocab.strings[match_id]  # get the unicode ID, i.e. 'home'
+                span = sent[start: end]  # get the matched slice of the sentence
+                print("places: %s: %s" % (rule_id, span))
+
+    
