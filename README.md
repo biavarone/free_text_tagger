@@ -23,7 +23,7 @@ Text given in input is parsed and then matched to the sub-categories by handwrit
 	
 ## Usage 
 
-`python3 tagger.py text`
+`python3 tagger.py text > outfile.txt`
 
 Text is the input text (string utf-8 format) to be analyzed.
 
